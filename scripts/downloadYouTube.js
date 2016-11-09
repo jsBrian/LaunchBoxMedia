@@ -39,7 +39,7 @@ function searchTrailer(title, query, opts) {
 	});
 }
 function downloadVideo(title, uri, filename) {
-	const ext = _.last(filename.split('.'));
+	const ext = _.last(_.last(filename).split('.'));
 
 	return downloadFile('video', title, uri, filename, () => ytdl(uri, DOWNLOAD_SETTINGS[ext]));
 }

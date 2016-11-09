@@ -31,7 +31,6 @@ module.exports = extensions => {
 			});
 	}
 	function isValid(filename) {
-		console.log(filename);
 		return filename.match(regex);
 	}
 };
