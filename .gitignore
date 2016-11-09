@@ -1,0 +1,6 @@
+LaunchMovies-win32-x64.zip
+LaunchMovies.sublime-project
+LaunchMovies.sublime-workspace
+/node_modules/*
+scripts/Settings.json
+todo.txt

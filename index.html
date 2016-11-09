@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>LaunchMovies</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.css">
+    <link rel="stylesheet" href="css/perfect-scrollbar.min.css">
+    <style>
+    body {
+      height: auto;
+    }
+    body > .ui.container {
+      margin: 0;
+      overflow: none;
+    }
+    input[type=file] {
+      display: none;
+    }
+    #progress {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 500px;
+      transform: translate(-50%, -50%);
+    }
+    #slideProgress {
+      z-index: 1;
+      background: white;
+    }
+    .slide {
+      display: none;
+      overflow-y: auto;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 58px;
+      padding: 2em;
+    }
+    #footer {
+      padding: 10px 7px;
+      text-align: right;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 58px;
+      background: #f0f0f0;
+      box-sizing: border-box;
+      border-top: 2px solid #dfdfdf;
+    }
+    .ui.selectionlist {
+      min-height: 350px;
+
+      font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+      margin: 0;
+      outline: 0;
+      -webkit-appearance: none;
+      tap-highlight-color: rgba(255,255,255,0);
+      line-height: 1.2142em;
+      padding: .67861429em 1em;
+      font-size: 1em;
+      background: #FFF;
+      border: 1px solid rgba(34,36,38,.15);
+      color: rgba(0,0,0,.87);
+      border-radius: .28571429rem;
+      box-shadow: 0 0 0 0 transparent inset;
+      -webkit-transition: color .1s ease,border-color .1s ease;
+      transition: color .1s ease,border-color .1s ease;
+    }
+    .ui.label.visible:not(.dropdown) {
+      display: block !important;
+      margin: 0.5em 0;
+      float: none;
+    }
+    .ui.label .delete.icon {
+      margin-left: 0;
+      margin-right: 0.5em;
+    }
+    .table_container {
+      max-width: 100%;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    td {
+      white-space: nowrap;
+    }
+    td input {
+      border: none !important;
+    }
+    td.text input {
+      width: 250px !important;
+    }
+    td.text.narrow input {
+      width: 150px !important;
+    }
+    td.number input {
+      width: 75px !important;
+    }
+    td.text, td.number {
+      padding: 0 !important;
+    }
+    td:nth-child(1) {
+      padding: 0 ! important;
+      margin: 0;
+      max-height: 33px;
+      max-width: 21px;
+    }
+    td:nth-child(1) i {
+      height: 32px;
+      width: 21px;
+      padding-top: 7px;
+      padding-left: 0px;
+      margin-top: -1px;
+      background: white;
+      cursor: pointer;
+      margin-bottom: -1px;
+    }
+    td:nth-child(1) i:hover {
+      background: #D0D0D0 !important;
+    }
+    .jqstb-scroll {
+      overflow: hidden !important;
+      position: relative;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="footer">
+      <button id="previous" class="white ui button">Previous</button>
+      <button id="next" class="blue ui button">Next</button>
+    </div>
+    <div class="slide" id="slideProgress">
+      <div id="progress" class="ui progress">
+        <div class="label"></div>
+        <div class="bar">
+          <div class="progress"></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide" id="slide5">
+      <div class="ui container">
+        <h2 class="ui dividing header">Finished!</h2>
+      </div>
+    </div>
+    <div class="slide" id="slide4">
+      <div class="ui container">
+        <h2 class="ui dividing header">Ready to import</h2>
+
+        <div class="ui form">
+          <div class="field">
+            <label>Options</label>
+            <p>
+              <div class="ui checkbox" id="downloadTrailers">
+                <input type="checkbox">
+                <label for="downloadTrailers">Download trailers</label>
+              </div>
+            </p>
+            <p>
+              <div class="ui checkbox" id="downloadMusic">
+                <input type="checkbox">
+                <label for="downloadMusic">Download theme music</label>
+              </div>
+            </p>
+            <p>
+              <div class="ui checkbox" id="useStars">
+                <input type="checkbox">
+                <label for="useStars">Add TMDb rating as star rating</label>
+              </div>
+            </p>
+          </div>
+          <div class="field">
+            <label>Results</label>
+            <div class="table_container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide" id="slide3">
+      <div class="ui container">
+        <h2 class="ui dividing header">Select platform and emulator</h2>
+
+        <div class="ui form">
+          <div class="field">
+            <label>Type</label>
+            <select id="mediaType" class="ui dropdown">
+              <option value="movie">Movies</option>
+              <option value="tv">TV Show</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Platform</label>
+            <input id="platform" type="text">
+          </div>
+          <div class="field">
+            <label>Emulators</label>
+            <select id="emulators" class="ui dropdown">
+              <option value="">Emulator</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide" id="slide2">
+      <div class="ui container">
+        <h2 class="ui dividing header">Select files</h2>
+
+        <div class="ui form">
+          <div class="field">
+            <div>
+              <input type="file" webkitdirectory />
+              <button id="add_directory" class="ui button">Add directory</button>
+              <input type="file" webkitdirectory />
+              <button id="add_file" class="ui button">Add file</button>
+            </div>
+          </div>
+          <div class="field">
+            <div id="moviePaths" class="selectionlist ui form"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide" id="slide1">
+      <div class="ui container">
+        <h2 class="ui dividing header">Set-up</h2>
+
+        <div class="ui form">
+          <div class="field">
+            <label>Select LaunchBox directory</label>
+            <div class="ui action input">
+              <input type="file" webkitdirectory />
+              <input id="launchBoxDir" type="text">
+              <button class="ui button">Select</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>TMDb API Key (v3 auth)</label>
+            <input id="tmdbApiKey" type="text">
+          </div>
+          <div class="field">
+            <label>YouTube API Key (optional, but required for trailers)</label>
+            <input id="youtubeApiKey" type="text">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui basic modal small">
+      <div class="header">
+        Error
+      </div>
+      <div class="content">
+        <div class="description">
+          <p id="errorMessage"></p>
+        </div>
+      </div>
+      <div class="actions">
+        <div class="one fluid ui inverted buttons">
+          <div id="okButton" class="ui ok green basic inverted button">
+            <i class="checkmark icon"></i>
+            Ok
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.16.6/lodash.min.js"></script>
+    <script src="./ext/jquery.scrollTableBody-1.0.0.js"></script>
+    <script src="./ext/perfect-scrollbar.jquery.min.js"></script>
+    <script>if (window.module) module = window.module;</script>
+
+    <script>
+    (function() {
+      'use strict';
+
+      const SettingsLoader = require('./scripts/Settings.js');
+
+      const electron = require('electron');
+      const LaunchBox = require('./scripts/LaunchBox.js');
+      const TMDbFetcher = require('./scripts/TMDbFetcher.js');
+      const pathsToTitles = require('./scripts/pathsToTitles.js');
+      const remote = electron.remote;
+      const mainProcess = remote.require('./main');
+
+      let Settings,
+        selectedEmulator,
+        reloadMovies = true;
+
+      let movieTitlesPromise;
+
+      // slide 1
+      unpackSettings();
+      filePicker($('#launchBoxDir').parent());
+      $('#launchBoxDir, #tmdbApiKey, #youtubeApiKey').on('change', slide1Change);
+      $('#launchBoxDir').on('change', () => {
+        reloadMovies = true;
+      });
+
+      // slide 2
+      $('#add_directory').on('click', addMoviePrompt(mainProcess.selectMovieDirectories));
+      $('#add_file').on('click', addMoviePrompt(mainProcess.selectMovieFiles));
+
+      // slide 3
+      $('#emulators').dropdown();
+      $('#mediaType').dropdown();
+      $('#emulators').on('change', emulatorChange);
+      $('#platform').on('change', slide3Change);
+      $('#mediaType').on('change', () => {
+        reloadMovies = true;
+      });
+
+      // slide 4
+      $('#downloadTrailers').checkbox();
+      $('#downloadMusic').checkbox();
+      $('#useStars').checkbox();
+
+      // error
+      $('#okButton').on('click', () => {
+        $('.ui.basic.modal').modal('close');
+        $('body').removeClass('dimmable');
+        openSlide1();
+      });
+
+      $('#platform').val('Movies');
+      addMoviePath('F:\\Multimedia\\Movies 2015\\Harry Potter 1 - Harry Potter And The.Sorcerers Stone.2001.UEE.1080p.Bluray.x264.anoXmous.mp4');
+      addMoviePath('F:\\Multimedia\\Movies 2015\\Harry Potter 2 - Harry Potter And The Chamber Of Secrets.2002.UEE.1080p.Bluray.x264.anoXmous.mp4');
+      addMoviePath('F:\\Multimedia\\Movies 2015\\Harry Potter 3 - Harry Potter And The Prisoner Of Azkaban.2004.UEE.1080p.Bluray.x264.anoXmous.mp4');
+      addMoviePath('F:\\Multimedia\\Movies 2015\\Harry Potter 4 - Harry Potter And The Goblet Of Fire.2005.1080p.Bluray.x264.anoXmous.mp4');
+      addMoviePath('F:\\Multimedia\\Movies 2015\\Harry Potter 5 - Harry Potter And The Order Of The Phoenix.2007.1080p.Bluray.x264.anoXmous.mp4');
+      addMoviePath('F:\\Multimedia\\Movies 2015\\Harry Potter 6 - Harry Potter and the Half Blood Prince.2009.1080p.Bluray.x264.anoXmous.mp4');
+      addMoviePath('F:\\Multimedia\\Movies 2015\\Harry Potter 7 - Harry Potter And The Deathly Hallows.Part.1.2010.1080p.Bluray.x264.anoXmous.mp4');
+      addMoviePath('F:\\Multimedia\\Movies 2015\\Harry Potter 8 - Harry Potter And The Deathly Hallows.Part.2.2011.1080p.Bluray.x264.anoXmous.mp4');
+
+      openSlide4();
+
+      return;
+
+      function emulatorChange() {
+        selectedEmulator = $('#emulators').val();
+        slide3Change();
+      }
+      function slide3Change() {
+        if ($('#platform').val()) {
+          $('#next').removeAttr('disabled');
+        } else {
+          $('#next').attr('disabled', 'disabled');
+        }
+      }
+      function slide1Change() {
+        packSettings();
+
+        if (Settings.launchBoxDir && Settings.tmdbApiKey) {
+          $('#next').removeAttr('disabled');
+        } else {
+          $('#next').attr('disabled', 'disabled');
+        }
+
+        LaunchBox.setDirectory(Settings.launchBoxDir);
+      }
+      function slide2Change() {
+        if ($('#moviePaths').children().length === 0) {
+          $('#next').attr('disabled', 'disabled');
+        } else {
+          $('#next').removeAttr('disabled');
+        }
+      }
+      function addMoviePrompt(f) {
+        return () => {
+          _.forEach(f(), addMoviePath);
+        };
+      }
+      function addMoviePath(path) {
+        if (!path) {
+          return;
+        }
+        let $delete = $('<i class="delete icon"></i>');
+        let $item = $('<a class="ui label transition visible"></a>');
+
+        $item.attr('data-value', path).text(path).appendTo('#moviePaths');
+        $delete.prependTo($item).on('click', deleteMoviePath);
+
+        reloadMovies = true;
+        slide2Change();
+      }
+      function deleteMoviePath() {
+        $(this).parent().remove();
+
+        reloadMovies = true;
+        slide2Change();
+      }
+      function filePicker($filePickerGroup) {
+        let filePickerGroup = $filePickerGroup[0];
+        let $filePicker = $filePickerGroup.find('[type=file]');
+        let $text = $filePickerGroup.find('[type=text]');
+        let $button = $filePickerGroup.find('button');
+
+        $button.on('click', () => {
+          $filePicker[0].click();
+        });
+        $filePicker.on('change', e => {
+          $text.val($filePicker[0].files[0].path);
+          $text.trigger('change');
+        });
+      }
+      function unpackSettings() {
+        Settings = SettingsLoader.load();
+
+        $('#launchBoxDir').val(Settings.launchBoxDir);
+        $('#tmdbApiKey').val(Settings.tmdbApiKey);
+        $('#youtubeApiKey').val(Settings.youtubeApiKey);
+
+        LaunchBox.setDirectory(Settings.launchBoxDir);
+      }
+      function packSettings() {
+        Settings.launchBoxDir = $('#launchBoxDir').val();
+        Settings.tmdbApiKey = $('#tmdbApiKey').val();
+        Settings.youtubeApiKey = $('#youtubeApiKey').val();
+
+        SettingsLoader.store(Settings);
+      }
+      function startLoading(label, promise) {
+        let $progress = $('#progress');
+        let $label = $progress.find('.label');
+
+        $label.text(label);
+        $('#slideProgress').show();
+        $progress.progress({
+          percent: 0
+        });
+
+        return promise.progress(progress => {
+          $progress.progress({
+            percent: progress * 100
+          });
+        }).fail(err => {
+          resetSlide();
+          $('#errorMessage').text(err);
+          $('.ui.basic.modal').modal({
+            closable: false
+          }).modal('show');
+        }).then(data => {
+          $('#slideProgress').hide();
+
+          return data;
+        });
+      }
+      function openSlide4() {
+        resetSlide();
+
+        $('#slide4').show();
+
+        $('#next').attr('disabled', 'disabled');
+        $('#previous').on('click', openSlide3);
+        $('#next').on('click', openSlide5);
+
+        $('#downloadTrailers').toggle(Settings.youtubeApiKey && $('#mediaType').val() === 'movie');
+        $('#downloadMusic').toggle(Settings.youtubeApiKey && $('#mediaType').val() === 'tv');
+
+        startLoading('Fetching movie titles', getMovieTitles()).then(movies => {
+          $('#next').removeAttr('disabled');
+          updateMoviesList(movies);
+        });
+      }
+      function openSlide5() {
+        resetSlide();
+
+        $('#slide5').show();
+
+        $('#next').attr('disabled', 'disabled');
+        $('#previous').on('click', openSlide4);
+
+
+        let movieList = getMovieTableList();
+
+        startLoading('Fetching movie information', TMDbFetcher({
+          Settings: Settings,
+          platform: $('#platform').val(),
+          emulator: selectedEmulator,
+          downloadTrailers: $('#downloadTrailers').checkbox('is checked'),
+          downloadMusic: $('#downloadMusic').checkbox('is checked'),
+          useStars: $('#useStars').checkbox('is checked'),
+          mediaType: $('#mediaType').val(),
+          movieList: getTableList()
+        }));
+      }
+      function getTableList() {
+        return ({
+          tv: getTvTableList,
+          movie: getMovieTableList
+        })[$('#mediaType').val()]();
+      }
+      function getTvTableList() {
+        let $list = $('#moviesList').children();
+
+        return _.map($list, el => {
+          let $parts = $(el).children();
+
+          let series = $($parts[1]).children().val();
+          let title = $($parts[2]).children().val();
+          let season = $($parts[3]).children().val();
+          let episodeNumber = $($parts[4]).children().val();
+          let filepath = $($parts[5]).text();
+
+          return {
+            series: series,
+            title: title,
+            season: season,
+            episodeNumber: episodeNumber,
+            filepath: filepath
+          };
+        });
+      }
+      function getMovieTableList() {
+        let $list = $('#moviesList').children();
+
+        return _.map($list, el => {
+          let $parts = $(el).children();
+
+          let title = $($parts[1]).children().val();
+          let year = $($parts[2]).children().val();
+          let filepath = $($parts[3]).text();
+
+          return {
+            title: title,
+            year: year,
+            filepath: filepath
+          };
+        });
+      }
+      function getMovieTitles() {
+        if (!movieTitlesPromise || reloadMovies) {
+          let paths = $('#moviePaths').children().map((i, el) => {
+            return $(el).data().value
+          }).get();
+          movieTitlesPromise = pathsToTitles(Settings, $('#platform').val(), paths, $('#mediaType').val())
+          reloadMovies = false;
+        }
+        return movieTitlesPromise;
+      }
+      function updateMoviesList(moviesList) {
+        $('.table_container').html('<table class="ui very basic compact small table"><thead class="full-width"><tr id="tableHeader"></tr></thead><tbody id="moviesList"></tbody></table>');
+
+        let $list = $('#moviesList');
+        let $tableHeader = $('#tableHeader');
+
+        $list.html('');
+        $tableHeader.html('<th></th>');
+
+        switch ($('#mediaType').val()) {
+          case 'movie':
+            $('<th>Title</th>').appendTo($tableHeader).addClass('text');
+            $('<th>Year</th>').appendTo($tableHeader).addClass('number');
+            $('<th>Path</th>').appendTo($tableHeader).addClass('path');
+
+            _.forEach(moviesList, function(movie) {
+              addMovieToMoviesList(movie);
+            });
+          break;
+          case 'tv':
+            $('<th>Show</th>').appendTo($tableHeader).addClass('text');
+            $('<th>Title</th>').appendTo($tableHeader).addClass('text');
+            $('<th>Season</th>').appendTo($tableHeader).addClass('number');
+            $('<th>Episode</th>').appendTo($tableHeader).addClass('number');
+            $('<th>Path</th>').appendTo($tableHeader).addClass('path');
+
+            _.forEach(moviesList, function(episode) {
+              addEpisodeToMoviesList(episode);
+            });
+          break;
+        }
+
+        $list.parent('table').scrollTableBody({
+          rowsToDisplay: 7.7
+        });
+
+        $list = $('#moviesList');
+        const $remIcons = $list.children().find('td:first-child').children();
+        const $scroller = $list.parents('.jqstb-scroll');
+        const scroller = $scroller[0];
+
+        let scrollLeft = 0;
+        $scroller.perfectScrollbar().on('scroll', e => {
+          if (scroller.scrollLeft === scrollLeft) {
+            return;
+          }
+          scrollLeft = scroller.scrollLeft;
+          $remIcons.css('margin-left', scrollLeft);
+        });
+
+        //$scroller.css('height', '');
+      }
+      function addMovieToMoviesList(movie) {
+        const $list = $('#moviesList');
+
+        const $row = $('<tr></tr>').appendTo($list);
+        const $delete = $('<td><i class="delete icon"></i></td>').appendTo($row).on('click', () => {
+          $row.remove();
+          $('#moviesList').parents('.jqstb-scroll').perfectScrollbar('update');
+        });
+        $('<td></td>').appendTo($row).addClass('text').html('<input type="text">').children().val(movie.guess.title);
+        $('<td></td>').appendTo($row).addClass('number').html('<input type="number">').children().val(movie.guess.year);
+        $('<td></td>').appendTo($row).addClass('path').text(movie.filePath);
+      }
+      function addEpisodeToMoviesList(episode) {
+        const $list = $('#moviesList');
+
+        const $row = $('<tr></tr>').appendTo($list);
+        const $delete = $('<td><i class="delete icon"></i></td>').appendTo($row).on('click', () => {
+          $row.remove();
+          $('#moviesList').parents('.jqstb-scroll').perfectScrollbar('update');
+        });
+        $('<td></td>').appendTo($row).addClass('text').addClass('narrow').html('<input type="text">').children().val(episode.guess.series);
+        $('<td></td>').appendTo($row).addClass('text').html('<input type="text">').children().val(episode.guess.title);
+        $('<td></td>').appendTo($row).addClass('number').html('<input type="number">').children().val(episode.guess.season);
+        $('<td></td>').appendTo($row).addClass('number').html('<input type="number">').children().val(episode.guess.episodeNumber);
+        $('<td></td>').appendTo($row).addClass('path').text(episode.filePath);
+      }
+      function openSlide3() {
+        resetSlide();
+
+        $('#slide3').show();
+
+        $('#previous').on('click', openSlide2);
+        $('#next').on('click', openSlide4);
+
+        updateEmulatorDropdown();
+
+        setTimeout(slide3Change, 10);
+      }
+      function openSlide1() {
+        resetSlide();
+
+        $('#slide1').show();
+        $('#previous').attr('disabled', 'disabled');
+
+        $('#next').on('click', openSlide2);
+
+        slide1Change();
+      }
+      function openSlide2() {
+        resetSlide();
+
+        $('#slide2').show();
+
+        $('#previous').on('click', openSlide1);
+        $('#next').on('click', openSlide3);
+
+        slide2Change();
+      }
+      function resetSlide() {
+        $('#previous').removeAttr('disabled');
+        $('#next').removeAttr('disabled');
+        $('.slide').hide();
+        $('#next').off('click');
+        $('#previous').off('click');
+      }
+      function updateEmulatorDropdown() {
+        let $emulators = $('#emulators');
+
+        const options = LaunchBox.getEmulators();
+        $emulators.html('<option value="">No emulator</option>');
+
+        _.forEach(options, option => {
+          $('<option>Emulator</option>').attr('value', option.value).text(option.text).appendTo($emulators);
+        });
+
+        $emulators.dropdown('refresh');
+        setTimeout(() => {
+          let isAvailable = !!_.find(options, {
+            value: selectedEmulator
+          });
+
+          if (isAvailable) {
+            $emulators.dropdown('set selected', selectedEmulator);
+          } else {
+            $emulators.dropdown('clear');
+          }
+        }, 10);
+      }
+    })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+electron-packager . LaunchMovies --platform=win32 --arch=x64 --overwrite --ignore=LaunchMovies.sublime-project --ignore=LaunchMovies.sublime-workspace --ignore=[a-zA-Z].zip --ignore=build.bat --ignore=scripts/Settings.json

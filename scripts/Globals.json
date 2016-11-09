@@ -1,0 +1,4 @@
+{
+  "movieFileExtensions": "mkv,avi,mp4,m4v,mov,qt,wmv,3gp,flv,mpeg,mpg,divx",
+  "logFile": "debug.log"
+}
