@@ -4,3 +4,4 @@ LaunchMovies.sublime-workspace
 /node_modules/*
 scripts/Settings.json
 todo.txt
+LaunchMovies-win32-x64/*
