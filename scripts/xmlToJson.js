@@ -57,9 +57,20 @@ module.exports = xml => {
 
       xml = xml.slice(tag.length);
 
-      stack[stack.length - 1] = tag;
+      stack[stack.length - 1] = htmlDecode(tag);
       stack[stack.length - 2][oldTag] = stack[stack.length - 1];
     }
   }
   return stack[0];
 };
+
+function htmlDecode(s) {
+  try {
+    return s.replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+  }
+  catch(e) {
+    console.log('error at ' + s);
+    console.error(e);
+    throw e;
+  }
+}

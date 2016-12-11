@@ -13,8 +13,8 @@ function jsonToXml(json, space) {
 			return EOL + space + '<' + key + '>' + jsonToXml(val, space + TAB) + '</' + key + '>';
 		}).join('');
 	}
-	return safeXmlString(json);
+	return htmlEncode(json);
 }
-function safeXmlString(s) {
+function htmlEncode(s) {
 	return s.split('&').join('&amp;').replace(/\&amp;amp;/g, '&amp;').replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
 }

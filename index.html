@@ -154,7 +154,18 @@
             <p>
               <div class="ui checkbox" id="downloadTrailers">
                 <input type="checkbox">
-                <label for="downloadTrailers">Download trailers</label>
+                <label for="downloadTrailers">
+                  <span>Download trailers</span>
+                  <div class="ui dropdown" id="trailerQuality">
+                    <input type="hidden" value="highest" name="quality">
+                    <i class="dropdown icon"></i>
+                    <div style="margin-right: 3px;" class="default text"></div>
+                    <div class="menu">
+                      <div class="item" data-value="highest">High quality</div>
+                      <div class="item" data-value="lowest">Low quality</div>
+                    </div>
+                  </div>
+                </label>
               </div>
             </p>
             <p>
@@ -239,8 +250,12 @@
             <input id="tmdbApiKey" type="text">
           </div>
           <div class="field">
-            <label>YouTube API Key (optional, but required for trailers)</label>
+            <label>YouTube Data API Key (optional, but required for trailers)</label>
             <input id="youtubeApiKey" type="text">
+          </div>
+          <div class="field">
+            <label>FANART.TV <u>Project</u> API Key (optional, but required for clear logo images)</label>
+            <input id="fanartApiKey" type="text">
           </div>
         </div>
       </div>
@@ -294,7 +309,7 @@
       // slide 1
       unpackSettings();
       filePicker($('#launchBoxDir').parent());
-      $('#launchBoxDir, #tmdbApiKey, #youtubeApiKey').on('change', slide1Change);
+      $('#launchBoxDir, #tmdbApiKey, #youtubeApiKey, #fanartApiKey').on('change', slide1Change);
       $('#launchBoxDir').on('change', () => {
         reloadMovies = true;
       });
@@ -323,6 +338,7 @@
         $('body').removeClass('dimmable');
         openSlide1();
       });
+      $('#trailerQuality').dropdown().on('click', e => e.stopPropagation());
 
       openSlide1();
 
@@ -399,6 +415,7 @@
         $('#launchBoxDir').val(Settings.launchBoxDir);
         $('#tmdbApiKey').val(Settings.tmdbApiKey);
         $('#youtubeApiKey').val(Settings.youtubeApiKey);
+        $('#fanartApiKey').val(Settings.fanartApiKey);
 
         LaunchBox.setDirectory(Settings.launchBoxDir);
       }
@@ -406,6 +423,7 @@
         Settings.launchBoxDir = $('#launchBoxDir').val();
         Settings.tmdbApiKey = $('#tmdbApiKey').val();
         Settings.youtubeApiKey = $('#youtubeApiKey').val();
+        Settings.fanartApiKey = $('#fanartApiKey').val();
 
         SettingsLoader.store(Settings);
       }
@@ -471,7 +489,8 @@
           downloadMusic: $('#downloadMusic').checkbox('is checked'),
           useStars: $('#useStars').checkbox('is checked'),
           mediaType: $('#mediaType').val(),
-          movieList: getTableList()
+          movieList: getTableList(),
+          trailerQuality: $('#trailerQuality').dropdown('get value')
         }));
       }
       function getTableList() {

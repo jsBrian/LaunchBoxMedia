@@ -51,7 +51,7 @@ function addGame(o) {
   storeGames(o.platform);
 }
 function createGameJSON(o) {
-  return {
+  const gameJSON = {
     ApplicationPath: o.filePath,
       Completed: 'false',
       DateAdded: getNowDateTime(),
@@ -64,7 +64,6 @@ function createGameJSON(o) {
       Platform: o.platform,
       Publisher: '',
       Rating: '',
-      ReleaseDate: o.releaseDate + 'T00:00:00' + timezoneOffset(),
       ScummVMAspectCorrection: 'false',
       ScummVMFullscreen: 'false',
       StarRating: o.stars + '',
@@ -80,6 +79,12 @@ function createGameJSON(o) {
       Broken: 'false',
       Genre: o.genres
   };
+
+  if (o.releaseDate) {
+    gameJSON.ReleaseDate = o.releaseDate + 'T00:00:00' + timezoneOffset();
+  }
+
+  return gameJSON;
 }
 function getJsonGamePaths(platform) {
   if (!jsonGames[platform]) {

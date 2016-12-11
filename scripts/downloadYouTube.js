@@ -16,16 +16,16 @@ const DOWNLOAD_SETTINGS = {
 	}
 };
 
-module.exports = apiKey => {
+module.exports = (apiKey, videoQuality) => {
 	const opts = {
 	  maxResults: 1,
 	  key: apiKey
 	};
 
-	return (title, query, filename) =>
+	return (title, query, filename, filter) =>
 		searchTrailer(title, query, opts).
 			then(link =>
-				downloadVideo(title, link, filename));
+				downloadVideo(title, link, filename, videoQuality, filter));
 };
 function searchTrailer(title, query, opts) {
 	return Defer(deferred => {
@@ -38,8 +38,11 @@ function searchTrailer(title, query, opts) {
 		});
 	});
 }
-function downloadVideo(title, uri, filename) {
+function downloadVideo(title, uri, filename, videoQuality, filter) {
 	const ext = _.last(_.last(filename).split('.'));
 
-	return downloadFile('video', title, uri, filename, () => ytdl(uri, DOWNLOAD_SETTINGS[ext]));
+	return downloadFile('video', title, uri, filename, () => ytdl(uri, {
+		quality: videoQuality,
+		filter: filter || 'video'
+	}));
 }

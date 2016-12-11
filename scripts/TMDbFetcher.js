@@ -7,9 +7,11 @@ const allCalls = require('./allCalls.js');
 const downloadYouTubeFactory = require('./downloadYouTube.js');
 const LaunchBox = require('./LaunchBox.js');
 const downloadImage = require('./downloadImage.js');
+//const downloadFanart = require('./downloadFanart.js');
 const getGenres = require('./getGenres.js');
 const Defer = require('./Defer.js');
 const fs = require('fs');
+const FanartTVFactory = require('fanart.tv');
 
 const STATUS_MAP = {
   movie: 'Imported Movie',
@@ -25,6 +27,7 @@ module.exports = o => {
   const downloadMusic = o.downloadMusic && Settings.youtubeApiKey && mediaType === 'tv';
   const useStars = o.useStars;
   const movieList = o.movieList;
+  const trailerQuality = o.trailerQuality;
 
   const LAUNCHBOX_PATH = Settings.launchBoxDir;
 
@@ -37,8 +40,9 @@ module.exports = o => {
     tv: queryTv
   };
 
+  const FanartTV = new FanartTVFactory(Settings.fanartApiKey);
   const MovieDB = MovieDbFactory(Settings.tmdbApiKey);
-  const downloadYouTube = downloadYouTubeFactory(Settings.youtubeApiKey);
+  const downloadYouTube = downloadYouTubeFactory(Settings.youtubeApiKey, trailerQuality);
 
   const tvSeasonPromiseMap = {};
   const tvShowPromiseMap = {};
@@ -49,6 +53,7 @@ module.exports = o => {
         _.map(movieList, movieInfo => () => QUERY_MAP[mediaType](movieInfo).
           then(data =>
             addMovie({
+              tmdbId:           data.id,
               series:           data.series,
               filePath:         movieInfo.filepath,
               releaseDate:      data.release_date,
@@ -70,8 +75,11 @@ module.exports = o => {
       downloadImage(o.title, o.backgroundImage, [LAUNCHBOX_PATH, 'Images', platform, 'Fanart - Background', o.title + '-01.jpg'])
     ];
 
+    if (Settings.fanartApiKey) {
+      calls.push(downloadClearLogo(o.tmdbId, o.title));
+    }
     if (downloadMusic) {
-      calls.push(downloadYouTube(o.title, ['intro', o.series], [LAUNCHBOX_PATH, 'Music', platform, o.title + '.m4a']));
+      calls.push(downloadYouTube(o.title, ['intro', o.series], [LAUNCHBOX_PATH, 'Music', platform, o.title + '.m4a'], 'audioonly'));
     }
     if (downloadTrailers) {
       calls.push(downloadYouTube(o.title, ['trailer', o.title, o.releaseDate.slice(0, 4)], [LAUNCHBOX_PATH, 'Videos', platform, o.title + '.mp4']));
@@ -117,6 +125,23 @@ module.exports = o => {
           };
         })
       );
+  }
+  function downloadClearLogo(tmdbId, title) {
+    return FanartTV.movies.get(tmdbId).then(data => {
+      const logos = _([]).
+        concat(_.get(data, 'hdmovielogo')).
+        concat(_.get(data, 'movielogo')).
+        concat(_.get(data, 'hdmovieclearart')).
+        concat(_.get(data, 'movieclearart')).
+        flatten().
+        compact().
+        value();
+      const logo = _.find(logos, {
+        lang:'en'
+      }) || logos[0];
+
+      return downloadImage(title, logo.url, [LAUNCHBOX_PATH, 'Images', platform, 'Clear Logo', title + '-01.' + _.last(logo.url.split('.'))]);
+    });
   }
   function queryTvSeasonEpisode(seriesId, season, episodeNumber) {
     const key = seriesId + ':' + season;
@@ -169,6 +194,7 @@ module.exports = o => {
           deferred.reject(err);
           return;
         }
+        console.log(res.results[0]);
         deferred.resolve(res.results[0]);
       })
     );
